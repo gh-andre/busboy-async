@@ -1,0 +1,23 @@
+{
+  "name": "busboy-async",
+  "version": "1.0.0",
+  "author": "gh-andre",
+  "license": "MIT",
+  "description": "An asynchronous generator for busboy events.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.js",
+  "scripts": {
+    "clean-win": "if EXIST dist rmdir /S /Q dist",
+    "clean-bash": "rm -rf dist",
+    "build": "tsc -p tsconfig.build.json",
+    "help-pack": "echo Run 'npm pack --pack-destination ../' to change output directory"
+  },
+  "dependencies": {
+    "busboy": "~1.6.*"
+  },
+  "devDependencies": {
+    "@types/busboy": "~1.5.*",
+    "@types/node": "~20.17.*"
+  }
+}
