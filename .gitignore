@@ -1,0 +1,5 @@
+/.npmrc
+/.vs/
+
+/node_modules/
+/dist/
