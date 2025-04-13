@@ -1,0 +1,17 @@
+{
+  "name": "busboy-async",
+  "version": "1.0.0",
+  "author": "gh-andre",
+  "license": "MIT",
+  "description": "An asynchronous generator for busboy events.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.js",
+  "dependencies": {
+    "busboy": "~1.6.*"
+  },
+  "devDependencies": {
+    "@types/busboy": "~1.5.*",
+    "@types/node": "~20.17.*"
+  }
+}
