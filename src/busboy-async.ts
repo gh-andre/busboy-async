@@ -106,9 +106,29 @@ export class BusboyAsync {
             // need to keep pumping data into busboy until the entire request body is consumed
             return new Promise((bbDone, bbError) => {
                 setImmediate(async () => {
+    feedBusboy(inStream: stream.Readable) : Promise<void|Error>
+    {
+        // need to keep pumping data into busboy in background until the entire request body is consumed
+        return new Promise<void|Error>((bbDone: () => void, bbError: (reason: any) => void) : void => {
+            setImmediate((bbDone: () => void, bbError: (reason: any) => void) : void => {
+                (async (bbDone: () => void, bbError: (reason: any) => void) => {
                     try {
                         // required to make Readable.readableFlowing false (is null before this)
                         inStream.pause();
+
+                        let streamError: Error|undefined = undefined;
+
+                        inStream.on("error", (error: Error) => {
+                            streamError = error;
+                            inStream.destroy();
+                            this.bb.destroy(error);
+                        });
+
+                        this.bb.on("error", (error: Error) => {
+                            streamError = error;
+                            this.bb.destroy();
+                            inStream.destroy(error);
+                        });
 
                         // busboy's buffer is full - need to allow downstream components to drain it
                         let needDrain: boolean = false;
@@ -117,7 +137,10 @@ export class BusboyAsync {
                         let needRead: boolean = false;
 
                         // pump all data from the in-stream into busboy, pausing to read more or to process what we read
-                        while(inStream.readable) {
+                        while(inStream.readable && this.bb.writable) {
+                            if(streamError)
+                                throw streamError;
+
                             if(!needDrain) {
                                 let data: Buffer|null = inStream.read();
 
@@ -125,6 +148,9 @@ export class BusboyAsync {
                                 if(data == null)
                                     needRead = true;
                                 else {
+                                    if(!this.bb.writable)
+                                        throw streamError || new Error("busboy stream is not writable");
+
                                     needDrain = !this.bb.write(data);
                                     needRead = false;
                                 }
@@ -140,6 +166,9 @@ export class BusboyAsync {
                             }
 
                             if(inStream.readableEnded && !needDrain) {
+                                if(!this.bb.writable)
+                                    throw streamError || new Error("busboy stream is not writable");
+
                                 this.bb.end();
                                 // without this the busboy stream will not be finalized until it is destroyed later, when the scope of the outer method ends
                                 await new Promise<void>((io_done) => {setImmediate(() => {io_done();});});
@@ -147,12 +176,32 @@ export class BusboyAsync {
                             }
                         }
 
-                        bbDone(undefined);
+                        if(streamError)
+                            throw streamError;
+
+                        bbDone();
                     }
                     catch (error) {
+                        //
+                        // The inner promise is only used as a convenience, so we can
+                        // use `await` inside. Handle it here, so it can be discarded,
+                        // and reject the outer promise that is returned to the caller.
+                        //
                         bbError(error);
                     }
-                });
-            });
-        }
+                })(bbDone, bbError);
+            }, bbDone, bbError)
+        })
+        //
+        // The returned promise will not be await'ed immediately after
+        // it is returned, which will likely cause an unhandled promise
+        // rejection exception because of some earlier `await` for an
+        // an unrelated promise (i.e. a promise must be handled within
+        // a single event loop iteration). So, we have to handle this
+        // promise here, which requires the `await` for this promise
+        // to check if the returned value is an `Error` instance and
+        // rethrow if it is.
+        //
+        .catch((error?: any) : Promise<void|Error> => {return Promise.resolve(error != undefined ? error : new Error("Unknown error in feedBusboy"));});
+    }
 }
