@@ -14,10 +14,10 @@
     "help-pack": "echo Run 'npm pack --pack-destination ../' to change output directory"
   },
   "dependencies": {
-    "busboy": "~1.6.*"
+    "busboy": "~1.*"
   },
   "devDependencies": {
-    "@types/busboy": "~1.5.*",
-    "@types/node": "~20.17.*"
+    "@types/busboy": "~1.*",
+    "@types/node": "~20.*"
   }
 }
