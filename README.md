@@ -149,13 +149,19 @@ returned by the generator.
 
 The promise returned from `busboyAsync.feedBusboy` is resolved at
 the end of the form data stream and normally there is no need to
-await for it because this error will be thrown from within the
+await for it because the same error will be thrown from within the
 asynchronous generator loop, as shown in the example above. The
 returned promise may be used to examine this error for debugging
 purposes, as shown below.
 
-```TypeScript
+Note that the error is returned as a result and not through the
+standard `async` error handling. This is because the error is
+generated via asynchronous callbacks in the stream data pump
+and may occur after other asynchronous events, such as a file
+upload, which will leave the corresponding promise in an
+unhandled rejected state and will terminate the Node.js process.
 
+```TypeScript
     let bbResult: void|Error = await busboyDone;
 
     if(bbResult instanceof Error)
@@ -165,8 +171,7 @@ purposes, as shown below.
 An optional error handler may be passed into `busboyAsync.feedBusboy`
 as shown below. It is important to realize that returning a rejected
 promise from this handler or throwing an error will result in an
-unhandled promise rejection, which will terminate the Node.js process
-by default.
+unhandled promise rejection, which will terminate the Node.js process.
 
 ```TypeScript
     busboyAsync.feedBusboy(req, (error: any) : any|Promise<any> => {
