@@ -152,7 +152,7 @@ export class BusboyAsync {
             // to see if it's something else.
             //
             if(catchHandler != undefined)
-                bbDataFeed.catch((error: any) : any|Promise<any> => {this.bbError = error; catchHandler(error);});
+                bbDataFeed.catch((error: any) : any|Promise<any> => {this.bbError = error; return catchHandler(error);});
             else
                 bbDataFeed.catch((error: any) : any|Promise<any> => {this.bbError = error; return Promise.resolve(error);});
 
