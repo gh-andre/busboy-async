@@ -1,0 +1,60 @@
+name: busboy-async 1.0.0
+
+on: workflow_dispatch
+
+env:
+  VERSION: 1.0.0
+  BUILD_NUMBER: ${{ github.run_number }}
+
+jobs:
+  build-package:
+    name: Build package
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        npm clean-install
+
+    - name: Compile source
+      run: |
+        tsc -p tsconfig.build.json
+
+    - name: Create package
+      run: |
+        npm pack
+        mv busboy-async-${{ env.VERSION }}.tgz busboy-async-${{ env.VERSION }}+${{ env.BUILD_NUMBER }}.tgz
+
+    - name: Upload package
+      uses: actions/upload-artifact@v4
+      with:
+        name: busboy-async-${{ env.VERSION }}
+        path: busboy-async-${{ env.VERSION }}+${{ env.BUILD_NUMBER }}.tgz
+
+  release-package:
+    name: Release candidate package
+    needs: build-package
+    runs-on: ubuntu-22.04
+
+    outputs:
+      draft-release-upload-url: ${{ steps.draft-release.outputs.upload_url }}
+
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: .
+        name: busboy-async-${{ env.VERSION }}
+
+    - name: Create draft release
+      uses: softprops/action-gh-release@v2
+      with:
+        token : ${{ secrets.GITHUB_TOKEN }}
+        tag_name: ${{ env.VERSION }}
+        target_commitish: ${{ github.ref_name }}
+        name: busboy-async ${{ env.VERSION }}
+        draft: true
+        files: |
+          busboy-async-${{ env.VERSION }}+${{ env.BUILD_NUMBER }}.tgz
