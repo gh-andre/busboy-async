@@ -1,0 +1,15 @@
+# Visual Studio maintenance
+/.vs/
+
+# local npm configuration
+/.npmrc
+
+# TypeScript build configuration
+/tsconfig.build.json
+/tsconfig.json
+
+# TypeScript source
+/src/
+
+# npm dependencies
+/node_modules/
