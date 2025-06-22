@@ -17,7 +17,7 @@ export type FileEvent = {
 
     fieldName: string;
 
-    // custom busboy stream - may have `truncated`, has `bytesRead` and may emit `limit` event
+    // custom busboy stream - may have `truncated`, has `bytesRead` and may emit `limit` events
     fileStream: stream.Readable & { truncated?: boolean };
 
 } & busboy.FileInfo;

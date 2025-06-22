@@ -23,7 +23,7 @@ repository, like this:
 
 ```
 npm install \
-  https://github.com/gh-andre/busboy-async/releases/download/1.0.0/busboy-async-1.0.0.tgz
+  https://github.com/gh-andre/busboy-async/releases/download/1.0.1/busboy-async-1.0.1.tgz
 ```
 
 # Example usage
